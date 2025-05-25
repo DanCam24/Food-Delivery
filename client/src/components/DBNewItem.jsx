@@ -16,7 +16,7 @@ import {
   alertSuccess,
 } from "../context/actions/alertActions";
 import { motion } from "framer-motion";
-import { buttonClcik } from "../animations";
+import { buttonClick } from "../animations";
 import { addNewProduct, updateProduct } from "../api";
 
 const DBNewItem = ({ initialProduct, onClose, onUpdate }) => {
@@ -217,7 +217,7 @@ const DBNewItem = ({ initialProduct, onClose, onUpdate }) => {
                       className="w-full h-full object-cover"
                     />
                     <motion.button
-                      {...buttonClcik}
+                      {...buttonClick}
                       type="button"
                       className="absolute top-3 right-3 p-3 rounded-full bg-red-500 text-xl cursor-pointer outline-none hover:shadow-md duration-500 transition-all ease-in-out"
                       onClick={deleteImageFromFirebase}
@@ -233,7 +233,7 @@ const DBNewItem = ({ initialProduct, onClose, onUpdate }) => {
 
         <motion.button
           onClick={handleSubmit}
-          {...buttonClcik}
+          {...buttonClick}
           className="w-9/12 py-2 rounded-md bg-red-400 text-primary hover:bg-red-500 cursor-pointer"
         >
           {initialProduct ? "Actualizar" : "Guardar"}

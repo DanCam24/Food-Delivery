@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { buttonClcik } from "../animations";
+import { buttonClick } from "../animations";
 import { addNewItemToCart, getAllCartItems } from "../api";
 import { IoBasket } from "../assets/icons";
 import { alertNULL, alertSuccess } from "../context/actions/alertActions";
@@ -54,7 +54,7 @@ const SliderCard = ({ data }) => {
         </p>
 
         <motion.div
-          {...buttonClcik}
+          {...buttonClick}
           onClick={sendToCart}
           className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center absolute -top-4 right-2 cursor-pointer"
         >
@@ -62,7 +62,7 @@ const SliderCard = ({ data }) => {
         </motion.div>
 
         <motion.div
-          {...buttonClcik}
+          {...buttonClick}
           onClick={AbrirCamaraRA}
           className="w-8 h-8 bg-white-500 flex items-center justify-center absolute -top-4 right-12 cursor-pointer"
         >

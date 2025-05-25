@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import React from "react";
-import { buttonClcik, staggerFadeInOut } from "../animations";
+import { buttonClick, staggerFadeInOut } from "../animations";
 import { getAllOrder, updateOrderSts } from "../api";
 import { setOrders } from "../context/actions/ordersAction";
 import { useDispatch } from "react-redux";
@@ -49,7 +49,7 @@ const OrderData = ({ index, data, admin }) => {
               <p className="text-lg font-semibold text-headingColor">Mark As</p>
 
               <motion.p
-                {...buttonClcik}
+                {...buttonClick}
                 onClick={() => handleClick(data.orderId, "preparing")}
                 className={`text-orange-500 text-base font-semibold capitalize border border-gray-300 px-2 py-[2px] rounded-md cursor-pointer`}
               >
@@ -57,7 +57,7 @@ const OrderData = ({ index, data, admin }) => {
               </motion.p>
 
               <motion.p
-                {...buttonClcik}
+                {...buttonClick}
                 onClick={() => handleClick(data.orderId, "cancelled")}
                 className={`text-red-500 text-base font-semibold capitalize border border-gray-300 px-2 py-[2px] rounded-md cursor-pointer`}
               >
@@ -65,7 +65,7 @@ const OrderData = ({ index, data, admin }) => {
               </motion.p>
 
               <motion.p
-                {...buttonClcik}
+                {...buttonClick}
                 onClick={() => handleClick(data.orderId, "delivered")}
                 className={`text-emerald-500 text-base font-semibold capitalize border border-gray-300 px-2 py-[2px] rounded-md cursor-pointer`}
               >

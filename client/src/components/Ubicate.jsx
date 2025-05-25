@@ -48,7 +48,7 @@ const Ubicate = () => {
               scale="1.2 1.2 1.2"
               position="0 2 -1"
               rotation="0 0 0"
-              // animation__rotation="property: rotation; to: 15 45 360; dur: 3000; loop: true"
+              animation__rotation="property: rotation; to: 15 45 360; dur: 7000; loop: true"
             />
           </a-marker>
         </a-scene>

@@ -3,7 +3,7 @@ import { LoginBg, Logo } from "../assets";
 import { LoginInput } from "../components";
 import { FaEnvelope, FaLock, FcGoogle } from "../assets/icons";
 import { motion } from "framer-motion";
-import { buttonClcik } from "../animations";
+import { buttonClick } from "../animations";
 import { useNavigate } from "react-router-dom";
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
@@ -161,7 +161,7 @@ const Login = () => {
             <p>
               No tengo cuenta:{" "}
               <motion.button
-                {...buttonClcik}
+                {...buttonClick}
                 className="text-red-600 underline cursor-pointer bg-transparent"
                 onClick={() => setIsSignUp(true)}
               >
@@ -172,7 +172,7 @@ const Login = () => {
             <p>
               Ya tengo cuenta:{" "}
               <motion.button
-                {...buttonClcik}
+                {...buttonClick}
                 className="text-red-600 underline cursor-pointer bg-transparent"
                 onClick={() => setIsSignUp(false)}
               >
@@ -183,7 +183,7 @@ const Login = () => {
 
           {isSignUp ? (
             <motion.button
-              {...buttonClcik}
+              {...buttonClick}
               className="w-full px-4 py-2 rounded-md bg-red-400 cursor-pointer text-white text-xl capitalize hover:bg-red-500 transition-all duration-150"
               onClick={signUpWithEmailPass}
             >
@@ -191,7 +191,7 @@ const Login = () => {
             </motion.button>
           ) : (
             <motion.button
-              {...buttonClcik}
+              {...buttonClick}
               onClick={signInWithEmailPass}
               className="w-full px-4 py-2 rounded-md bg-red-400 cursor-pointer text-white text-xl capitalize hover:bg-red-500 transition-all duration-150"
             >
@@ -207,7 +207,7 @@ const Login = () => {
         </div>
 
         <motion.div
-          {...buttonClcik}
+          {...buttonClick}
           className="flex items-center justify-center px-20 py-2 bg-lightOverlay backdrop-blur-md cursor-pointer rounded-3xl gap-4"
           onClick={loginWithGoogle}
         >

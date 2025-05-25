@@ -2,7 +2,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { buttonClcik, slideIn, staggerFadeInOut } from "../animations";
+import { buttonClick, slideIn, staggerFadeInOut } from "../animations";
 import { baseURL, getAllCartItems, increaseItemQuantity } from "../api";
 import {
   BiChevronsRight,
@@ -50,7 +50,7 @@ const Cart = () => {
     >
       <div className="w-full flex items-center justify-between py-4  px-6">
         <motion.i
-          {...buttonClcik}
+          {...buttonClick}
           className="cursor-pointer"
           onClick={() => dispatch(setCartOff())}
         >
@@ -79,7 +79,7 @@ const Cart = () => {
               </div>
 
               <motion.button
-                {...buttonClcik}
+                {...buttonClick}
                 className="bg-orange-400 w-[70%] px-4 py-3 text-xl text-headingColor font-semibold hover:bg-orange-500 drop-shadow-md rounded-2xl"
                 onClick={handleCheckOut}
               >
@@ -154,7 +154,7 @@ export const CartItemCard = ({ index, data }) => {
 
       <div className="ml-auto flex items-center justify-center gap-3">
         <motion.div
-          {...buttonClcik}
+          {...buttonClick}
           onClick={() => decrementCart(data?.productId)}
           className="w-8 h-8 flex items-center justify-center rounded-md drop-shadow-md bg-zinc-900 cursor-pointer"
         >
@@ -162,7 +162,7 @@ export const CartItemCard = ({ index, data }) => {
         </motion.div>
         <p className="text-lg text-primary font-semibold">{data?.quantity}</p>
         <motion.div
-          {...buttonClcik}
+          {...buttonClick}
           className="w-8 h-8 flex items-center justify-center rounded-md drop-shadow-md bg-zinc-900 cursor-pointer"
           onClick={() => incrementCart(data?.productId)}
         >

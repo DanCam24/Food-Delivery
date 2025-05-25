@@ -4,7 +4,7 @@ import {
 } from "../assets/icons";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
-import { buttonClcik } from "../animations";
+import { buttonClick } from "../animations";
 import { Avatar } from "../assets";
 import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
@@ -48,7 +48,7 @@ const DBHeader = () => {
           </div>
 
           <motion.div
-            {...buttonClcik}
+            {...buttonClick}
             onClick={signOut}
             className="w-10 h-10 rounded-md cursor-pointer bg-lightOverlay backdrop-blur-md shadow-md flex items-center justify-center"
           >

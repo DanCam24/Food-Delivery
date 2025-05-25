@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 import { Bill } from "../assets";
 import { Header } from "../components";
 import { motion } from "framer-motion";
-import { buttonClcik } from "../animations";
+import { buttonClick } from "../animations";
 
 const CheckoutSuccess = () => {
   return (
@@ -17,7 +17,7 @@ const CheckoutSuccess = () => {
           Amount paid Successfully
         </h1>
 
-        <motion.div {...buttonClcik}>
+        <motion.div {...buttonClick}>
           <NavLink
             to={"/"}
             className="flex items-center justify-center gap-4 cursor-pointer text-2xl text-textColor font-semibold px-4 py-2 rounded-md border border-gray-300 hover:shadow-md"

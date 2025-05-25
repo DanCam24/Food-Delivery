@@ -2,7 +2,7 @@ import React from "react";
 import { Cart, Header } from "../components";
 import { AboutImage, Merc } from "../assets";
 import { motion } from "framer-motion";
-import { buttonClcik } from "../animations";
+import { buttonClick } from "../animations";
 import { useSelector } from "react-redux";
 
 const AboutUs = () => {
@@ -90,7 +90,7 @@ const AboutUs = () => {
             rel="noopener noreferrer" 
           >
             <motion.button
-              {...buttonClcik}
+              {...buttonClick}
               className="bg-gradient-to-bl from-green-400 to-green-600 px-4 py-2 rounded-xl text-black text-base font-semibold mt-8"
             >
               Visítanos

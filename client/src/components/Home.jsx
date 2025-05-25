@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import React from "react";
-import { buttonClcik, staggerFadeInOut } from "../animations";
+import { buttonClick, staggerFadeInOut } from "../animations";
 import { Delivery, HeroBg } from "../assets";
 import { randomData } from "../utils/styles";
 import { NavLink } from "react-router-dom";
@@ -36,7 +36,7 @@ const Home = () => {
 
         <NavLink to={"/menu"}>
           <motion.button
-            {...buttonClcik}
+            {...buttonClick}
             className="bg-gradient-to-bl from-orange-400 to-orange-600 px-4 py-2 rounded-xl text-black text-base font-semibold hover:scale-105 transition-transform duration-300"
           >
             Ordena Ahora
