@@ -35,12 +35,17 @@ const menuItems = [
 const commonLinks = [
   { to: "/", label: "Inicio", activeClassName: "text-red-500" },
   { to: "/menu", label: "Menú", activeClassName: "text-red-500" },
-  { to: "/aboutus", label: "Acerca De Nosotros", activeClassName: "text-green-500" },
+  {
+    to: "/aboutus",
+    label: "Acerca De Nosotros",
+    activeClassName: "text-green-500",
+  },
 ];
 
 const MenuLinks = ({ items, user, isMobile = false }) => {
   return items.map(({ to, label, adminOnly, activeClassName }) => {
-    if (adminOnly && user?.user_id !== process.env.REACT_APP_ADMIN_ID) return null;
+    if (adminOnly && user?.user_id !== process.env.REACT_APP_ADMIN_ID)
+      return null;
     if (isMobile) {
       return (
         <Link
@@ -91,7 +96,9 @@ const UserMenu = ({ user, signOut, closeMenu }) => {
         tabIndex={0}
       >
         <MdLogout className="text-2xl text-textColor group-hover:text-headingColor" />
-        <p className="text-textColor text-xl group-hover:text-headingColor">Cerrar Sesión</p>
+        <p className="text-textColor text-xl group-hover:text-headingColor">
+          Cerrar Sesión
+        </p>
       </motion.button>
     </motion.div>
   );
@@ -116,7 +123,9 @@ const MobileUserMenu = ({ user, signOut }) => {
           tabIndex={0}
         >
           <MdLogout className="text-2xl text-textColor group-hover:text-headingColor" />
-          <p className="text-textColor text-xl group-hover:text-headingColor">Cerrar Sesión</p>
+          <p className="text-textColor text-xl group-hover:text-headingColor">
+            Cerrar Sesión
+          </p>
         </motion.button>
       )}
     </div>
@@ -160,7 +169,10 @@ const Header = () => {
         <p className="font-semibold text-3xl">El Buen Gusto</p>
       </NavLink>
 
-      <nav className="hidden md:flex flex-1 justify-center" aria-label="Main navigation">
+      <nav
+        className="hidden md:flex flex-1 justify-center"
+        aria-label="Main navigation"
+      >
         <ul className="flex items-center gap-16">
           {commonLinks.map(({ to, label, activeClassName }) => (
             <NavLink
@@ -168,7 +180,9 @@ const Header = () => {
               to={to}
               className={({ isActive }) =>
                 isActive
-                  ? `text-2xl font-semibold ${activeClassName || "text-red-700"} px-4 py-2 duration-100 transition-all ease-in-out`
+                  ? `text-2xl font-semibold ${
+                      activeClassName || "text-red-700"
+                    } px-4 py-2 duration-100 transition-all ease-in-out`
                   : isNotActiveStyles
               }
             >
@@ -179,21 +193,25 @@ const Header = () => {
       </nav>
 
       <div className="flex items-center gap-6 ml-auto">
-        <motion.div
-          {...buttonClick}
-          onClick={() => dispatch(setCartOn())}
-          className="relative cursor-pointer"
-          aria-label="Carrito de compras"
-          role="button"
-          tabIndex={0}
-        >
-          <MdShoppingCart className="text-3xl text-textColor" />
-          {cart?.length > 0 && (
-            <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center absolute -top-4 -right-1">
-              <p className="text-primary text-base font-semibold">{cart.length}</p>
-            </div>
-          )}
-        </motion.div>
+        {user?.user_id && (
+          <motion.div
+            {...buttonClick}
+            onClick={() => dispatch(setCartOn())}
+            className="relative cursor-pointer"
+            aria-label="Carrito de compras"
+            role="button"
+            tabIndex={0}
+          >
+            <MdShoppingCart className="text-3xl text-textColor" />
+            {cart?.length > 0 && (
+              <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center absolute -top-4 -right-1">
+                <p className="text-primary text-base font-semibold">
+                  {cart.length}
+                </p>
+              </div>
+            )}
+          </motion.div>
+        )}
 
         {user ? (
           <div
@@ -225,8 +243,16 @@ const Header = () => {
         )}
       </div>
 
-      {isUserMenuOpen && user && <UserMenu user={user} signOut={signOut} closeMenu={() => setIsUserMenuOpen(false)} />}
-      {isUserMenuOpen && user && <MobileUserMenu user={user} signOut={signOut} />}
+      {isUserMenuOpen && user && (
+        <UserMenu
+          user={user}
+          signOut={signOut}
+          closeMenu={() => setIsUserMenuOpen(false)}
+        />
+      )}
+      {isUserMenuOpen && user && (
+        <MobileUserMenu user={user} signOut={signOut} />
+      )}
     </header>
   );
 };

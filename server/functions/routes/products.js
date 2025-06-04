@@ -2,8 +2,11 @@ const router = require("express").Router();
 const admin = require("firebase-admin");
 const db = admin.firestore();
 const express = require("express");
+const Stripe = require("stripe");
+const stripe = new Stripe(process.env.STRIPE_KEY);
 db.settings({ ignoreUndefinedProperties: true });
 
+// Crear un producto
 router.post("/create", async (req, res) => {
   try {
     const id = Date.now();
@@ -12,6 +15,7 @@ router.post("/create", async (req, res) => {
       product_name: req.body.product_name,
       product_category: req.body.product_category,
       product_price: req.body.product_price,
+      product_quantity: req.body.product_quantity,
       imageURL: req.body.imageURL,
     };
 
@@ -27,11 +31,11 @@ router.post("/create", async (req, res) => {
 router.put("/update/:productId", async (req, res) => {
   const productId = req.params.productId;
 
-  // Validación de datos
   if (
     !req.body.product_name ||
     !req.body.product_category ||
-    !req.body.product_price
+    !req.body.product_price ||
+    !req.body.product_quantity
   ) {
     return res
       .status(400)
@@ -43,6 +47,7 @@ router.put("/update/:productId", async (req, res) => {
       product_name: req.body.product_name,
       product_category: req.body.product_category,
       product_price: req.body.product_price,
+      product_quantity: req.body.product_quantity,
       imageURL: req.body.imageURL,
     };
 
@@ -92,22 +97,17 @@ router.post("/addToCart/:userId", async (req, res) => {
   const productId = req.body.productId;
 
   try {
-    const doc = await db
+    const itemRef = db
       .collection("cartItems")
-      .doc(`/${userId}/`)
+      .doc(`${userId}`)
       .collection("items")
-      .doc(`/${productId}/`)
-      .get();
+      .doc(`${productId}`);
 
-    if (doc.data()) {
+    const doc = await itemRef.get();
+
+    if (doc.exists) {
       const quantity = doc.data().quantity + 1;
-      const updatedItem = await db
-        .collection("cartItems")
-        .doc(`/${userId}/`)
-        .collection("items")
-        .doc(`/${productId}/`)
-        .update({ quantity });
-      return res.status(200).send({ success: true, data: updatedItem });
+      await itemRef.update({ quantity });
     } else {
       const data = {
         productId: productId,
@@ -116,15 +116,12 @@ router.post("/addToCart/:userId", async (req, res) => {
         product_price: req.body.product_price,
         imageURL: req.body.imageURL,
         quantity: 1,
+        created: Date.now(),
       };
-      const addItems = await db
-        .collection("cartItems")
-        .doc(`/${userId}/`)
-        .collection("items")
-        .doc(`/${productId}/`)
-        .set(data);
-      return res.status(200).send({ success: true, data: addItems });
+      await itemRef.set(data);
     }
+    const updatedDoc = await itemRef.get();
+    return res.status(200).send({ success: true, data: updatedDoc.data() });
   } catch (err) {
     return res.send({ success: false, msg: `Error :${err}` });
   }
@@ -139,9 +136,9 @@ router.post("/updateCart/:user_id", async (req, res) => {
   try {
     const doc = await db
       .collection("cartItems")
-      .doc(`/${userId}/`)
+      .doc(`${userId}`)
       .collection("items")
-      .doc(`/${productId}/`)
+      .doc(`${productId}`)
       .get();
 
     if (doc.data()) {
@@ -149,18 +146,18 @@ router.post("/updateCart/:user_id", async (req, res) => {
         const quantity = doc.data().quantity + 1;
         const updatedItem = await db
           .collection("cartItems")
-          .doc(`/${userId}/`)
+          .doc(`${userId}`)
           .collection("items")
-          .doc(`/${productId}/`)
+          .doc(`${productId}`)
           .update({ quantity });
         return res.status(200).send({ success: true, data: updatedItem });
       } else {
         if (doc.data().quantity === 1) {
           await db
             .collection("cartItems")
-            .doc(`/${userId}/`)
+            .doc(`${userId}`)
             .collection("items")
-            .doc(`/${productId}/`)
+            .doc(`${productId}`)
             .delete()
             .then((result) => {
               return res.status(200).send({ success: true, data: result });
@@ -169,9 +166,9 @@ router.post("/updateCart/:user_id", async (req, res) => {
           const quantity = doc.data().quantity - 1;
           const updatedItem = await db
             .collection("cartItems")
-            .doc(`/${userId}/`)
+            .doc(`${userId}`)
             .collection("items")
-            .doc(`/${productId}/`)
+            .doc(`${productId}`)
             .update({ quantity });
           return res.status(200).send({ success: true, data: updatedItem });
         }
@@ -189,7 +186,7 @@ router.get("/getCartItems/:user_id", async (req, res) => {
     try {
       let query = db
         .collection("cartItems")
-        .doc(`/${userId}/`)
+        .doc(`${userId}`)
         .collection("items");
       let response = [];
 
@@ -208,19 +205,33 @@ router.get("/getCartItems/:user_id", async (req, res) => {
   })();
 });
 
+// Crear sesión de checkout
 router.post("/create-checkout-session", async (req, res) => {
-  const customer = await stripe.customers.create({
-    metadata: {
-      user_id: req.body.data.user.user_id,
-      cart: JSON.stringify(req.body.data.cart),
-      total: req.body.data.total,
-    },
-  });
+  try {
+    const carritoId = Date.now().toString();
+    const { user, cart, total } = req.body.data;
 
-  const line_items = req.body.data.cart.map((item) => {
-    return {
+    // Guardar carrito en Firestore
+    await db.collection("cartPay").doc(carritoId).set({
+      user_id: user.user_id,
+      items: cart,
+      total: total,
+      created: Date.now(),
+    });
+
+    // Crear cliente Stripe con carritoId pequeño en metadata
+    const customer = await stripe.customers.create({
+      metadata: {
+        user_id: user.user_id,
+        carrito_id: carritoId,
+      },
+    });
+
+    // Preparar items para Stripe Checkout
+    const line_items = cart.map((item) => ({
       price_data: {
-        currency: "inr",
+        currency: "cop",
+        unit_amount: item.product_price * 100,
         product_data: {
           name: item.product_name,
           images: [item.imageURL],
@@ -228,40 +239,44 @@ router.post("/create-checkout-session", async (req, res) => {
             id: item.productId,
           },
         },
-        unit_amount: item.product_price * 100,
       },
       quantity: item.quantity,
-    };
-  });
+    }));
 
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ["card"],
-    shipping_address_collection: { allowed_countries: ["IN"] },
-    shipping_options: [
-      {
-        shipping_rate_data: {
-          type: "fixed_amount",
-          fixed_amount: { amount: 0, currency: "inr" },
-          display_name: "Free shipping",
-          delivery_estimate: {
-            minimum: { unit: "hour", value: 2 },
-            maximum: { unit: "hour", value: 4 },
+    // Crear sesión
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      shipping_address_collection: { allowed_countries: ["CO"] },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: 0, currency: "cop" },
+            display_name: "Gratis el envio",
+            delivery_estimate: {
+              minimum: { unit: "hour", value: 2 },
+              maximum: { unit: "hour", value: 4 },
+            },
           },
         },
+      ],
+      phone_number_collection: {
+        enabled: true,
       },
-    ],
-    phone_number_collection: {
-      enabled: true,
-    },
+      line_items,
+      customer: customer.id,
+      mode: "payment",
+      success_url: `${process.env.CLIENT_URL}/checkout-success`,
+      cancel_url: `${process.env.CLIENT_URL}/`,
+    });
 
-    line_items,
-    customer: customer.id,
-    mode: "payment",
-    success_url: `${process.env.CLIENT_URL}/checkout-success`,
-    cancel_url: `${process.env.CLIENT_URL}/`,
-  });
-
-  res.send({ url: session.url });
+    res.send({ url: session.url });
+  } catch (err) {
+    console.error("Error al crear checkout session:", err);
+    res
+      .status(500)
+      .send({ success: false, message: "Error al crear la sesión de pago" });
+  }
 });
 
 let endpointSecret;
@@ -291,25 +306,32 @@ router.post(
       eventType = req.body.type;
     }
 
-    // Handle the event
     if (eventType === "checkout.session.completed") {
       stripe.customers.retrieve(data.customer).then((customer) => {
-        // console.log("Customer details", customer);
-        // console.log("Data", data);
         createOrder(customer, data, res);
       });
+    } else {
+      res.send().end();
     }
-
-    // Return a 200 res to acknowledge receipt of the event
-    res.send().end();
   }
 );
 
 const createOrder = async (customer, intent, res) => {
-  console.log("Inside the orders");
   try {
+    const carritoId = customer.metadata.carrito_id;
+
+    const carritoDoc = await db.collection("cartPay").doc(carritoId).get();
+    if (!carritoDoc.exists) {
+      console.error("Carrito no encontrado:", carritoId);
+      return res
+        .status(400)
+        .send({ success: false, msg: "Carrito no encontrado" });
+    }
+
+    const carritoData = carritoDoc.data();
     const orderId = Date.now();
-    const data = {
+
+    const orderData = {
       intentId: intent.id,
       orderId: orderId,
       amount: intent.amount_total,
@@ -318,59 +340,60 @@ const createOrder = async (customer, intent, res) => {
       status: intent.payment_status,
       customer: intent.customer_details,
       shipping_details: intent.shipping_details,
-      userId: customer.metadata.user_id,
-      items: JSON.parse(customer.metadata.cart),
-      total: customer.metadata.total,
-      sts: "preparing",
+      userId: carritoData.user_id,
+      items: carritoData.items,
+      total: carritoData.total,
+      sts: "empacando",
     };
 
-    await db.collection("orders").doc(`/${orderId}/`).set(data);
+    await db.collection("orders").doc(`${orderId}`).set(orderData);
+    deleteCart(carritoData.user_id, carritoData.items);
+    await db.collection("cartPay").doc(carritoId).delete();
 
-    deleteCart(customer.metadata.user_id, JSON.parse(customer.metadata.cart));
-    console.log("*****************************************");
-
+    console.log("Orden creada exitosamente");
     return res.status(200).send({ success: true });
   } catch (err) {
-    console.log(err);
+    console.error("Error al crear la orden:", err);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error al crear la orden" });
   }
 };
 
 const deleteCart = async (userId, items) => {
-  console.log("Inside the delete");
-
-  console.log(userId);
-
-  console.log("*****************************************");
-  items.map(async (data) => {
-    console.log("-------------------inside--------", userId, data.productId);
-    await db
-      .collection("cartItems")
-      .doc(`/${userId}/`)
-      .collection("items")
-      .doc(`/${data.productId}/`)
-      .delete()
-      .then(() => console.log("-------------------successs--------"));
-  });
+  for (const data of items) {
+    try {
+      await db
+        .collection("cartItems")
+        .doc(`${userId}`)
+        .collection("items")
+        .doc(`${data.productId}`)
+        .delete();
+      console.log(
+        `Item ${data.productId} eliminado del carrito de usuario ${userId}`
+      );
+    } catch (error) {
+      console.error(
+        `Error eliminando item ${data.productId} del carrito de usuario ${userId}`,
+        error
+      );
+    }
+  }
 };
 
 // orders
 router.get("/orders", async (req, res) => {
-  (async () => {
-    try {
-      let query = db.collection("orders");
-      let response = [];
-      await query.get().then((querysnap) => {
-        let docs = querysnap.docs;
-        docs.map((doc) => {
-          response.push({ ...doc.data() });
-        });
-        return response;
-      });
-      return res.status(200).send({ success: true, data: response });
-    } catch (err) {
-      return res.send({ success: false, msg: `Error :${err}` });
-    }
-  })();
+  try {
+    let query = db.collection("orders");
+    let response = [];
+    const querysnap = await query.get();
+    querysnap.docs.forEach((doc) => {
+      response.push({ ...doc.data() });
+    });
+    return res.status(200).send({ success: true, data: response });
+  } catch (err) {
+    return res.send({ success: false, msg: `Error :${err}` });
+  }
 });
 
 // update the order status
@@ -381,7 +404,7 @@ router.post("/updateOrder/:order_id", async (req, res) => {
   try {
     const updatedItem = await db
       .collection("orders")
-      .doc(`/${order_id}/`)
+      .doc(order_id)
       .update({ sts });
     return res.status(200).send({ success: true, data: updatedItem });
   } catch (er) {

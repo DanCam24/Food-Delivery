@@ -31,7 +31,6 @@ const AboutUs = () => {
     <main className="w-screen min-h-screen flex flex-col bg-primary">
       <Header />
       <div className="w-full flex md:flex-row flex-col-reverse items-start justify-between mt-40 px-6 md:px-24 2xl:px-96 gap-12 pb-24">
-        {/* Contenido de Acerca de Nosotros */}
         <div className="flex-1 md:max-w-[70%]">
           <motion.div className="flex flex-col items-start justify-start gap-6">
             <div className="px-4 py-1 flex items-center justify-center gap-2 bg-green-100 rounded-full">
@@ -117,7 +116,6 @@ const AboutUs = () => {
           <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-primary to-transparent opacity-70"></div>
         </div>
       </div>
-
       {isCart && <Cart />}
     </main>
   );

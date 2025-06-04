@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllOrder } from "../api";
-import { Header, OrderData } from "../components";
+import { Cart, Header, OrderData } from "../components";
 import { setOrders } from "../context/actions/ordersAction";
 
 const UsersOrder = () => {
+  const isCart = useSelector((state) => state.isCart);
   const user = useSelector((state) => state.user);
   const orders = useSelector((state) => state.orders);
   const dispatch = useDispatch();
@@ -34,10 +35,11 @@ const UsersOrder = () => {
           </>
         ) : (
           <>
-            <h1 className="text-[72px] text-headingColor font-bold">No Data</h1>
+            <h1 className="text-[72px] text-headingColor font-bold">Sin ordenes</h1>
           </>
         )}
       </div>
+      {isCart && <Cart />}
     </main>
   );
 };

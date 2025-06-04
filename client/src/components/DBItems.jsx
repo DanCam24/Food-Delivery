@@ -26,7 +26,6 @@ const DBItems = () => {
 
   const handleUpdate = async (updatedData) => {
     try {
-      // Asegúrate de pasar el objeto completo del producto
       await updateProduct(updatedData);
       dispatch(alertSuccess("Producto actualizado con éxito"));
       setTimeout(() => {
@@ -57,63 +56,63 @@ const DBItems = () => {
   };
 
   return (
-    <div className="flex items-center justify-self-center gap-4 pt-6 w-full">
-      <DataTable
-        columns={[
-          {
-            title: "Imagen",
-            field: "imageURL",
-            render: (rowData) => (
-              <img
-                src={rowData.imageURL}
-                className="w-32 h-16 object-contain rounded-md"
-                alt={rowData.product_name}
-              />
-            ),
-          },
-          {
-            title: "Nombre",
-            field: "product_name",
-          },
-          {
-            title: "Categoría",
-            field: "product_category",
-          },
-          {
-            title: "Precio",
-            field: "product_price",
-            render: (rowData) => (
-              <p className="text-xl font-semibold text-textColor flex items-center justify-center">
-                $ {parseFloat(rowData.product_price)}
-              </p>
-            ),
-          },
-        ]}
-        data={products}
-        title="Lista de Productos"
-        actions={[
-          {
-            icon: "edit",
-            tooltip: "Editar",
-            onClick: (event, rowData) => handleEdit(rowData),
-          },
-          {
-            icon: "delete",
-            tooltip: "Borrar",
-            onClick: (event, rowData) => handleDelete(rowData),
-          },
-        ]}
-      />
-      
-      {editProduct && (
+    <div className="w-full pt-6">
+      {editProduct ? (
         <DBNewItem 
           initialProduct={editProduct} 
           onClose={() => setEditProduct(null)} 
           onUpdate={handleUpdate} 
         />
+      ) : (
+        <DataTable
+          columns={[
+            {
+              title: "Imagen",
+              field: "imageURL",
+              render: (rowData) => (
+                <img
+                  src={rowData.imageURL}
+                  className="w-32 h-16 object-contain rounded-md"
+                  alt={rowData.product_name}
+                />
+              ),
+            },
+            {
+              title: "Nombre",
+              field: "product_name",
+            },
+            {
+              title: "Categoría",
+              field: "product_category",
+            },
+            {
+              title: "Precio",
+              field: "product_price",
+              render: (rowData) => (
+                <p className="text-xl font-semibold text-textColor flex items-center justify-center">
+                  $ {parseFloat(rowData.product_price)}
+                </p>
+              ),
+            },
+          ]}
+          data={products}
+          title="Lista de Productos"
+          actions={[
+            {
+              icon: "edit",
+              tooltip: "Editar",
+              onClick: (event, rowData) => handleEdit(rowData),
+            },
+            {
+              icon: "delete",
+              tooltip: "Borrar",
+              onClick: (event, rowData) => handleDelete(rowData),
+            },
+          ]}
+        />
       )}
     </div>
-  );
+  );  
 };
 
 export default DBItems;

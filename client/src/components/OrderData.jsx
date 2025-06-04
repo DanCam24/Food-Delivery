@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import React from "react";
+import React, { useState } from "react";
 import { buttonClick, staggerFadeInOut } from "../animations";
 import { getAllOrder, updateOrderSts } from "../api";
 import { setOrders } from "../context/actions/ordersAction";
@@ -7,13 +7,41 @@ import { useDispatch } from "react-redux";
 
 const OrderData = ({ index, data, admin }) => {
   const dispatch = useDispatch();
+  const [cleaning, setCleaning] = useState(false);
+  const [cleanResult, setCleanResult] = useState(null);
 
   const handleClick = (orderId, sts) => {
-    updateOrderSts(orderId, sts).then((response) => {
+    updateOrderSts(orderId, sts).then(() => {
       getAllOrder().then((data) => {
         dispatch(setOrders(data));
       });
     });
+  };
+
+  const handleCleanOldCarts = async () => {
+    if (!window.confirm("¿Estás seguro de limpiar los carritos antiguos?")) return;
+
+    setCleaning(true);
+    setCleanResult(null);
+    try {
+      const res = await fetch("/clean-old-carts", {
+        method: "DELETE",
+      });
+      const json = await res.json();
+      if (json.success) {
+        setCleanResult(json.message);
+        // Refrescar órdenes luego de limpiar
+        getAllOrder().then((data) => {
+          dispatch(setOrders(data));
+        });
+      } else {
+        setCleanResult("Error al limpiar carritos antiguos.");
+      }
+    } catch (error) {
+      setCleanResult("Error de conexión.");
+    } finally {
+      setCleaning(false);
+    }
   };
 
   return (
@@ -22,54 +50,58 @@ const OrderData = ({ index, data, admin }) => {
       className="w-full flex flex-col items-start justify-start px-3 py-2 border relative border-gray-300 bg-lightOverlay drop-shadow-md rounded-md gap-4"
     >
       <div className="w-full flex items-center justify-between">
-        <h1 className="text-xl text-headingColor font-semibold">Orders</h1>
+        <h1 className="text-xl text-headingColor font-semibold">Ordenes</h1>
 
-        <div className=" flex items-center gap-4">
+        <div className="flex items-center gap-4">
           <p className="flex items-center gap-1 text-textColor">
-            Total : $ 
-            <span className="text-headingColor font-bold">{data?.total}</span>
+            Total: $
+            <span className="text-headingColor font-bold">
+              {data?.total || "No disponible"}
+            </span>
           </p>
 
-          <p className="px-2 py-[2px] text-sm text-headingColor font-semibold capitalize  rounded-md bg-emerald-400 drop-shadow-md">
-            {data?.status}
+          <p className="px-2 py-[2px] text-sm text-headingColor font-semibold capitalize rounded-md bg-emerald-400 drop-shadow-md">
+            {data?.status === "paid"
+              ? "Pagado"
+              : data?.status || "Estado no disponible"}
           </p>
 
           <p
             className={`text-base font-semibold capitalize border border-gray-300 px-2 py-[2px] rounded-md ${
-              (data.sts === "preparing" && "text-orange-500 bg-orange-100") ||
-              (data.sts === "cancelled" && "text-red-500 bg-red-100") ||
-              (data.sts === "delivered" && "text-emerald-500 bg-emerald-100")
+              (data?.sts === "empacando" && "text-orange-500 bg-orange-100") ||
+              (data?.sts === "cancelado" && "text-red-500 bg-red-100") ||
+              (data?.sts === "entregado" && "text-emerald-500 bg-emerald-100")
             }`}
           >
-            {data?.sts}
+            {data?.sts || "Estado de envío no disponible"}
           </p>
 
           {admin && (
             <div className="flex items-center justify-center gap-2">
-              <p className="text-lg font-semibold text-headingColor">Mark As</p>
+              <p className="text-lg font-semibold text-headingColor">Estado</p>
 
               <motion.p
                 {...buttonClick}
-                onClick={() => handleClick(data.orderId, "preparing")}
-                className={`text-orange-500 text-base font-semibold capitalize border border-gray-300 px-2 py-[2px] rounded-md cursor-pointer`}
+                onClick={() => handleClick(data.orderId, "empacando")}
+                className="text-orange-500 text-base font-semibold capitalize border border-gray-300 px-2 py-[2px] rounded-md cursor-pointer"
               >
-                Preparing
+                Empacando
               </motion.p>
 
               <motion.p
                 {...buttonClick}
-                onClick={() => handleClick(data.orderId, "cancelled")}
-                className={`text-red-500 text-base font-semibold capitalize border border-gray-300 px-2 py-[2px] rounded-md cursor-pointer`}
+                onClick={() => handleClick(data.orderId, "cancelado")}
+                className="text-red-500 text-base font-semibold capitalize border border-gray-300 px-2 py-[2px] rounded-md cursor-pointer"
               >
-                Cancelled
+                Cancelado
               </motion.p>
 
               <motion.p
                 {...buttonClick}
-                onClick={() => handleClick(data.orderId, "delivered")}
-                className={`text-emerald-500 text-base font-semibold capitalize border border-gray-300 px-2 py-[2px] rounded-md cursor-pointer`}
+                onClick={() => handleClick(data.orderId, "entregado")}
+                className="text-emerald-500 text-base font-semibold capitalize border border-gray-300 px-2 py-[2px] rounded-md cursor-pointer"
               >
-                Delivered
+                Entregado
               </motion.p>
             </div>
           )}
@@ -78,55 +110,78 @@ const OrderData = ({ index, data, admin }) => {
 
       <div className="flex items-center justify-start flex-wrap w-full">
         <div className="flex items-center justify-center gap-4">
-          {data?.items &&
-            data.items.map((item, j) => (
-              <motion.div
-                {...staggerFadeInOut(j)}
-                key={j}
-                className="flex items-center justify-center gap-1"
-              >
-                <img
-                  src={item.imageURL}
-                  className="w-10 h-10 object-contain"
-                  alt=""
-                />
+          {data?.items?.map((item, j) => (
+            <motion.div
+              {...staggerFadeInOut(j)}
+              key={j}
+              className="flex items-center justify-center gap-1"
+            >
+              <img
+                src={item?.imageURL || "default-image.png"}
+                className="w-32 h-28 object-contain"
+                alt={item?.product_name || "Producto sin imagen"}
+              />
 
-                <div className="flex items-start flex-col">
-                  <p className="text-base font-semibold text-headingColor">
-                    {item.product_name}
+              <div className="flex items-start flex-col">
+                <p className="text-base font-semibold text-headingColor">
+                  {item?.product_name || "Nombre del producto no disponible"}
+                </p>
+                <div className="flex items-start gap-2">
+                  <p className="text-sm text-textColor">
+                    Cantidad: {item?.quantity || "N/A"}
                   </p>
-                  <div className="flex items-start gap-2">
-                    <p className="text-sm text-textColor">
-                      {" "}
-                      Qty : {item.quantity}
-                    </p>
-                    <p className="flex items-center gap-1 text-textColor">
-                      $ {parseFloat(item.product_price)}
-                    </p>
-                  </div>
+                  <p className="flex items-center gap-1 text-textColor">
+                    Precio ${parseFloat(item?.product_price) || "N/A"}
+                  </p>
                 </div>
-              </motion.div>
-            ))}
+              </div>
+            </motion.div>
+          ))}
         </div>
 
-        <div className="flex items-start justify-start flex-col gap-2 px-6 ml-auto w-full md:w-460">
-          <h1 className="text-lg text-headingColor font-semibold">
-            {data.shipping_details.name}
+        <div className="flex items-start justify-start flex-col gap-4 px-6 ml-auto w-full md:w-460">
+          <h1 className="text-xl font-semibold text-headingColor">
+            {data?.customer?.name || "Nombre de envío no disponible"}
           </h1>
 
-          <p className="text-base text-headingColor -mt-2">
-            {data.customer.email} {data.customer.phone}
-          </p>
-
-          <p className="text-base text-textColor -mt-2">
-            {data.shipping_details.address.line1},
-            {data.shipping_details.address.line2}{" "}
-            {data.shipping_details.address.country},
-            {data.shipping_details.address.state} -
-            {data.shipping_details.address.postal_code}
-          </p>
+          <div className="flex flex-col gap-0">
+            <p className="text-base text-headingColor">
+              <span className="font-semibold">Email:</span>{" "}
+              {data?.customer?.email || "Email no disponible"}
+            </p>
+            <p className="text-base text-headingColor">
+              <span className="font-semibold">Teléfono:</span>{" "}
+              {data?.customer?.phone || "Teléfono no disponible"}
+            </p>
+            <p className="text-base text-headingColor">
+              <span className="font-semibold">Dirección:</span>
+              {data?.customer?.address?.line1 || "Dirección no disponible"},
+              {data?.customer?.address?.line2 &&
+                `${data?.customer?.address?.line2}, `}
+              {data?.customer?.address?.country || "País no disponible"},
+              {data?.customer?.address?.state || "Estado no disponible"} -
+              {data?.customer?.address?.postal_code ||
+                "Código postal no disponible"}
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* Botón para limpiar carritos antiguos, solo visible para admin */}
+      {admin && (
+        <div className="mt-4 flex flex-col items-start gap-2">
+          <button
+            disabled={cleaning}
+            onClick={handleCleanOldCarts}
+            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition disabled:opacity-50"
+          >
+            {cleaning ? "Limpiando carritos antiguos..." : "Limpiar carritos antiguos"}
+          </button>
+          {cleanResult && (
+            <p className="text-sm text-green-600 font-semibold">{cleanResult}</p>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 };

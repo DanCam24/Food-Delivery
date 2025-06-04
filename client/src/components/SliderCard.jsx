@@ -13,8 +13,8 @@ const SliderCard = ({ data }) => {
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
-  const [isModalOpen, setIsModalOpen] = useState(false); 
-  const [ setProductImages] = useState([]); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [setProductImages] = useState([]);
 
   const sendToCart = () => {
     dispatch(alertSuccess("Añadido al Carrito"));
@@ -30,7 +30,7 @@ const SliderCard = ({ data }) => {
 
   const AbrirCamaraRA = () => {
     if (data.images && data.images.length > 0) {
-      setProductImages(data.images); 
+      setProductImages(data.images);
     }
     setIsModalOpen(true);
     setInterval(() => {
@@ -39,12 +39,16 @@ const SliderCard = ({ data }) => {
   };
 
   const closeModal = () => {
-    setIsModalOpen(false); 
+    setIsModalOpen(false);
   };
 
   return (
     <div className="bg-lightOverlay hover:drop-shadow-lg backdrop-blur-md rounded-xl flex items-center justify-between relative px-4 py-2 w-full md:w-340 md:min-w-350 gap-3">
-      <img src={data.imageURL} className="w-40 h-40 object-contain" alt={data.product_name} />
+      <img
+        src={data.imageURL}
+        className="w-40 h-40 object-contain"
+        alt={data.product_name}
+      />
       <div className="relative pt-12">
         <p className="text-xl text-headingColor font-semibold">
           {data.product_name}
@@ -53,18 +57,20 @@ const SliderCard = ({ data }) => {
           $ {parseFloat(data.product_price)}
         </p>
 
-        <motion.div
-          {...buttonClick}
-          onClick={sendToCart}
-          className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center absolute -top-4 right-2 cursor-pointer"
-        >
-          <IoBasket className="text-2xl text-primary" />
-        </motion.div>
+        {user?.user_id && (
+          <motion.div
+            {...buttonClick}
+            onClick={sendToCart}
+            className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center absolute -top-4 right-12 cursor-pointer"
+          >
+            <IoBasket className="text-2xl text-primary" />
+          </motion.div>
+        )}
 
         <motion.div
           {...buttonClick}
           onClick={AbrirCamaraRA}
-          className="w-8 h-8 bg-white-500 flex items-center justify-center absolute -top-4 right-12 cursor-pointer"
+          className="w-8 h-8 bg-white-500 flex items-center justify-center absolute -top-4 right-2 cursor-pointer"
         >
           <img src={RAicon} className="text-2xl text-primary" alt="RA icon" />
         </motion.div>
@@ -73,8 +79,8 @@ const SliderCard = ({ data }) => {
       <PopupModal
         isOpen={isModalOpen}
         closeModal={closeModal}
-        productImages={data.productImages} 
-        productName= {data.product_name} 
+        productImages={data.productImages}
+        productName={data.product_name}
       />
     </div>
   );

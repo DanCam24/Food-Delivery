@@ -26,7 +26,7 @@ const DBOrders = () => {
         </>
       ) : (
         <>
-          <h1 className="text-[72px] text-headingColor font-bold">No Data</h1>
+          <h1 className="text-[72px] text-headingColor font-bold">Sin ordenes</h1>
         </>
       )}
     </div>
