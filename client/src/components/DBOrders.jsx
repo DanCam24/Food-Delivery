@@ -14,7 +14,7 @@ const DBOrders = () => {
         dispatch(setOrders(data));
       });
     }
-  }, []);
+  }, [orders, dispatch]);
 
   return (
     <div className=" flex items-center justify-center flex-col pt-6 w-full gap-4">
@@ -26,7 +26,9 @@ const DBOrders = () => {
         </>
       ) : (
         <>
-          <h1 className="text-[72px] text-headingColor font-bold">Sin ordenes</h1>
+          <h1 className="text-[72px] text-headingColor font-bold">
+            Sin ordenes
+          </h1>
         </>
       )}
     </div>

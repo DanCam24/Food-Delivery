@@ -33,13 +33,14 @@ const Menu = () => {
     } else {
       setSelectedCategories((prev) =>
         prev.includes(category)
-          ? prev.filter((cat) => cat !== category) // Desactiva la categoría
+          ? prev.filter((cat) => cat !== category)
           : [...prev, category]
       );
     }
   };
 
   const filteredProducts = products
+    .filter((product) => product.product_quantity > 0)
     .filter((product) =>
       product.product_name.toLowerCase().includes(searchTerm.toLowerCase())
     )

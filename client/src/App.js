@@ -13,11 +13,14 @@ import { setUserDetails } from "./context/actions/userActions";
 import AboutUs from "./containers/Aboutus";
 import Menu from "./containers/Menu";
 import Ubicate from "./components/Ubicate";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+const firebaseAuth = getAuth(app);
 
 const App = () => {
-  const firebaseAuth = getAuth(app);
   const [isLoading, setIsLoading] = useState(false);
   const alert = useSelector((state) => state.alert);
+  const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -28,7 +31,6 @@ const App = () => {
           validateUserJWTToken(token).then((data) => {
             if (data) {
               getAllCartItems(data.user_id).then((items) => {
-                //console.log(items);
                 dispatch(setCartItems(items));
               });
             }
@@ -36,7 +38,7 @@ const App = () => {
           });
         });
       }
-      setInterval(() => {
+      setTimeout(() => {
         setIsLoading(false);
       }, 3000);
     });
@@ -55,12 +57,23 @@ const App = () => {
       <Routes>
         <Route path="/*" element={<Main />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard/*" element={<Dashboard />} />
+        <Route
+          path="/dashboard/*"
+          element={
+            <ProtectedRoute user={user}>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/checkout-success" element={<CheckOutSuccess />} />
         <Route path="/user-orders" element={<UsersOrder />} />
         <Route path="/aboutUs" element={<AboutUs />} />
         <Route path="/ubicate" element={<Ubicate />} />
         <Route path="/menu" element={<Menu />} />
+        <Route
+          path="/no-acceso"
+          element={<div>No tienes permisos para acceder aquí.</div>}
+        />
       </Routes>
       {alert?.type && <Alert type={alert?.type} message={alert?.message} />}
     </div>

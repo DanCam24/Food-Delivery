@@ -1,6 +1,6 @@
 import React from "react";
 import { Cart, Header } from "../components";
-import { AboutImage, Merc } from "../assets";
+import { AboutImage } from "../assets";
 import { motion } from "framer-motion";
 import { buttonClick } from "../animations";
 import { useSelector } from "react-redux";

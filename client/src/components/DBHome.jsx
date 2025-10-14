@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllProducts } from "../api";
+import { getAllProducts, getAllOrder } from "../api";
 import { setAllProducts } from "../context/actions/productActions";
 import { CChart } from "@coreui/react-chartjs";
 
@@ -8,268 +8,277 @@ const DBHome = () => {
   const products = useSelector((state) => state.products);
   const dispatch = useDispatch();
 
-  // Filtros para cada categoría correcta
-  const bebidas = products?.filter((item) => item.product_category === "Bebidas");
-  const verduras = products?.filter((item) => item.product_category === "Verduras");
-  const frutas = products?.filter((item) => item.product_category === "Frutas");
-  const granos = products?.filter((item) => item.product_category === "Granos");
-  const carnicos = products?.filter((item) => item.product_category === "Cárnicos");
-  const aseo = products?.filter((item) => item.product_category === "Aseo");
-  const abarrotes = products?.filter((item) => item.product_category === "Abarrotes");
-  const lacteos = products?.filter((item) => item.product_category === "Lácteos");
-  const mascotas = products?.filter((item) => item.product_category === "Mascotas");
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  const categories = ["Bebidas", "Verduras", "Frutas", "Granos", "Cárnicos", "Aseo", "Abarrotes", "Lácteos", "Mascotas"];
-  const revenueData = [12000, 8500, 9400, 7800, 10200, 6400, 9200, 8300, 7500];
-  const profitMarginData = [15, 10, 12, 8, 20, 5, 9, 13, 6];
+  const categories = useMemo(() => {
+    if (!products) return [];
+    const uniqueCategories = new Set();
+    products.forEach((product) => {
+      if (product.product_category) {
+        uniqueCategories.add(product.product_category);
+      }
+    });
+    return Array.from(uniqueCategories);
+  }, [products]);
+
+  const [revenueData, setRevenueData] = useState([]);
+  const [availabilityData, setAvailabilityData] = useState([]);
+
+  const productsByCategory = useMemo(() => {
+    const map = Object.fromEntries(categories.map((cat) => [cat, []]));
+    products?.forEach((product) => {
+      if (map[product.product_category]) {
+        map[product.product_category].push(product);
+      }
+    });
+    return map;
+  }, [products, categories]);
+
+  const unavailableProductsByCategory = useMemo(() => {
+    const result = {};
+    categories.forEach((cat) => {
+      const catProducts = productsByCategory[cat] || [];
+      result[cat] = catProducts.filter(
+        (p) => parseInt(p.product_quantity || "0") === 0
+      );
+    });
+    return result;
+  }, [productsByCategory, categories]);
 
   useEffect(() => {
-    if (!products) {
-      getAllProducts().then((data) => {
-        dispatch(setAllProducts(data));
+    const fetchData = async () => {
+      if (!products || products.length === 0) {
+        const prodData = await getAllProducts();
+        dispatch(setAllProducts(prodData));
+      }
+
+      const orders = await getAllOrder();
+
+      const categoryRevenue = Object.fromEntries(
+        categories.map((cat) => [cat, 0])
+      );
+
+      orders?.forEach((order) => {
+        const orderDate = new Date(order.created * 1000);
+        const orderMonth = orderDate.getMonth() + 1;
+        const orderYear = orderDate.getFullYear();
+
+        if (orderMonth === selectedMonth && orderYear === selectedYear) {
+          order.items?.forEach((item) => {
+            const { product_category, product_price, quantity } = item;
+            const price = parseFloat(product_price || "0");
+            const qty = quantity || 0;
+            if (categoryRevenue.hasOwnProperty(product_category)) {
+              categoryRevenue[product_category] += price * qty;
+            }
+          });
+        }
       });
-    }
-  }, [products, dispatch]);
+
+      setRevenueData(categories.map((cat) => categoryRevenue[cat] || 0));
+
+      const availability = categories.map((cat) => {
+        const catProducts = productsByCategory[cat] || [];
+        const disponibles = catProducts.filter(
+          (p) => parseInt(p.product_quantity || "0") > 0
+        ).length;
+        const noDisponibles = catProducts.length - disponibles;
+        return { disponibles, noDisponibles };
+      });
+
+      setAvailabilityData(availability);
+    };
+
+    fetchData();
+  }, [
+    products,
+    dispatch,
+    productsByCategory,
+    categories,
+    selectedMonth,
+    selectedYear,
+  ]);
+
+  const categoryCounts = useMemo(
+    () => categories.map((cat) => productsByCategory[cat]?.length || 0),
+    [productsByCategory, categories]
+  );
 
   return (
-    <div className="flex items-center justify-center flex-col pt-6 w-full h-full">
-      {/* Sección de gráficos */}
-      <div className="grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 h-full">
-        
-        {/* Gráfico de Barras - Cantidad de Productos por Categoría */}
-        <div className="w-full">
-          <CChart
-            type="bar"
-            data={{
-              labels: [
-                "Bebidas",
-                "Verduras",
-                "Frutas",
-                "Granos",
-                "Cárnicos",
-                "Aseo",
-                "Abarrotes",
-                "Lácteos",
-                "Mascotas",
-              ],
-              datasets: [
-                {
-                  label: "Conteo por Categoría",
-                  backgroundColor: "#6bc3fa",
-                  data: [
-                    bebidas?.length,
-                    verduras?.length,
-                    frutas?.length,
-                    granos?.length,
-                    carnicos?.length,
-                    aseo?.length,
-                    abarrotes?.length,
-                    lacteos?.length,
-                    mascotas?.length,
-                  ],
-                },
-              ],
-            }}
-            labels="months"
-          />
-        </div>
+    <div className="flex flex-col items-center justify-center pt-6 w-full h-full">
+      <div className="flex gap-4 mb-6">
+        <select
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(Number(e.target.value))}
+          className="border px-2 py-1 rounded"
+        >
+          {[...Array(12)].map((_, i) => (
+            <option key={i + 1} value={i + 1}>
+              {new Date(0, i).toLocaleString("default", { month: "long" })}
+            </option>
+          ))}
+        </select>
 
-        {/* Gráfico de Líneas - Comparación de Rentabilidad */}
-<div className="w-full">
-  <CChart
-    type="line"
-    data={{
-      labels: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio"], // Meses
-      datasets: [
-        {
-          label: "Rentabilidad de Verduras (%)",
-          borderColor: "#4BC0C0",
-          backgroundColor: "rgba(75, 192, 192, 0.2)",
-          data: [15, 20, 25, 18, 22, 26], // Datos ficticios para Bebidas
-          fill: false,
-        },
-        {
-          label: "Rentabilidad de Frutas (%)",
-          borderColor: "#9966FF",
-          backgroundColor: "rgba(153, 102, 255, 0.2)",
-          data: [10, 12, 15, 14, 17, 19], // Datos ficticios para Postres
-          fill: false,
-        },
-      ],
-    }}
-    options={{
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: { display: true, text: "Rentabilidad (%)" },
-        },
-      },
-      plugins: {
-        legend: {
-          position: "top",
-        },
-      },
-    }}
-  />
-</div>
-
-
-        {/* Gráfico de Barras Apiladas - Disponibilidad por Categoría */}
-        <div className="w-full">
-          <CChart
-            type="bar"
-            data={{
-              labels: [
-                "Bebidas",
-                "Verduras",
-                "Frutas",
-                "Granos",
-                "Cárnicos",
-                "Aseo",
-                "Abarrotes",
-                "Lácteos",
-                "Mascotas",
-              ],
-              datasets: [
-                {
-                  label: "Disponibles",
-                  backgroundColor: "#4BC0C0",
-                  data: [30, 50, 70, 40, 60, 35, 80, 55, 45],
-                },
-                {
-                  label: "No disponibles",
-                  backgroundColor: "#FF6384",
-                  data: [5, 10, 15, 7, 9, 5, 12, 6, 3],
-                },
-              ],
-            }}
-            options={{
-              scales: {
-                x: { stacked: true },
-                y: { stacked: true },
-              },
-            }}
-          />
-        </div>
-
-        {/* Gráfico de Torta - Distribución de Categorías */}
-        <div className="w-full lg:w-3/4 xl:w-2/3">
-          <CChart
-            type="pie"
-            data={{
-              labels: [
-                "Bebidas",
-                "Verduras",
-                "Frutas",
-                "Granos",
-                "Cárnicos",
-                "Aseo",
-                "Abarrotes",
-                "Lácteos",
-                "Mascotas",
-              ],
-              datasets: [
-                {
-                  backgroundColor: [
-                    "#FF6384",
-                    "#36A2EB",
-                    "#FFCE56",
-                    "#FF9F40",
-                    "#FF6384",
-                    "#36A2EB",
-                    "#4BC0C0",
-                    "#9966FF",
-                    "#FF9F40",
-                  ],
-                  data: [
-                    bebidas?.length,
-                    verduras?.length,
-                    frutas?.length,
-                    granos?.length,
-                    carnicos?.length,
-                    aseo?.length,
-                    abarrotes?.length,
-                    lacteos?.length,
-                    mascotas?.length,
-                  ],
-                },
-              ],
-            }}
-          />
-        </div>
-
-{/* Gráfico de Barras - Ingresos por Categoría */}
-<div className="w-full">
-  <CChart
-    type="bar" // Asegúrate de que aquí el tipo sea "bar"
-    data={{
-      labels: categories,
-      datasets: [
-        {
-          label: "Ingresos ($)",
-          backgroundColor: "#6bc3fa",
-          data: revenueData,
-          borderWidth: 1, // Puedes ajustar esto según prefieras
-          barPercentage: 0.8,
-          categoryPercentage: 0.6,
-        },
-      ],
-    }}
-    options={{
-      responsive: true,
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top',
-        },
-      },
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: 'Categorías',
-          },
-        },
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Ingresos ($)',
-          },
-        },
-      },
-    }}
-  />
-</div>
-
-
-        {/* Gráfico de Líneas - Margen de Ganancia */}
-        <div className="w-full">
-          <CChart
-            type="line"
-            data={{
-              labels: categories,
-              datasets: [
-                {
-                  label: "Margen de Ganancia (%)",
-                  borderColor: "#FF6384",
-                  backgroundColor: "rgba(255,99,132,0.2)",
-                  data: profitMarginData,
-                  fill: false,
-                },
-              ],
-            }}
-            options={{
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: { display: true, text: "Margen de Ganancia (%)" },
-                },
-              },
-            }}
-          />
-        </div>
+        <select
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(Number(e.target.value))}
+          className="border px-2 py-1 rounded"
+        >
+          {[2023, 2024, 2025].map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
       </div>
+
+      <div className="grid w-full grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+        <ChartCard
+          title="Conteo por Categoría"
+          type="bar"
+          labels={categories}
+          datasets={[
+            {
+              label: "Conteo",
+              backgroundColor: "#6bc3fa",
+              data: categoryCounts,
+            },
+          ]}
+          options={{}}
+        />
+
+        <ChartCard
+          title="Rentabilidad por Línea"
+          type="line"
+          labels={categories}
+          datasets={[
+            {
+              label: "Rentabilidad ($)",
+              borderColor: "#4BC0C0",
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              data: revenueData.map((value) => (value * 0.2).toFixed(2)),
+              fill: false,
+            },
+          ]}
+          options={{
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: "Rentabilidad ($)" },
+              },
+            },
+          }}
+        />
+
+        <ChartCard
+          title="Disponibilidad por Categoría"
+          type="bar"
+          labels={categories}
+          datasets={[
+            {
+              label: "Disponibles",
+              backgroundColor: "#4BC0C0",
+              data: availabilityData.map((d) => d.disponibles),
+            },
+            {
+              label: "No disponibles",
+              backgroundColor: "#FF6384",
+              data: availabilityData.map((d) => d.noDisponibles),
+            },
+          ]}
+          options={{
+            scales: {
+              x: { stacked: true },
+              y: { stacked: true, beginAtZero: true },
+            },
+          }}
+          unavailableProductsByCategory={unavailableProductsByCategory}
+        />
+
+        <ChartCard
+          title="Ingresos por Categoría"
+          type="bar"
+          labels={categories}
+          datasets={[
+            {
+              label: "Ingresos ($)",
+              backgroundColor: "#6bc3fa",
+              data: revenueData,
+              borderWidth: 1,
+            },
+          ]}
+          options={{
+            scales: {
+              x: { title: { display: true, text: "Categorías" } },
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: "Ingresos ($)" },
+              },
+            },
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const ChartCard = ({
+  title,
+  type,
+  labels,
+  datasets,
+  options,
+  unavailableProductsByCategory,
+}) => {
+  const extendedOptions = {
+    ...options,
+    plugins: {
+      ...options?.plugins,
+      tooltip: {
+        ...options?.plugins?.tooltip,
+        callbacks: {
+          ...options?.plugins?.tooltip?.callbacks,
+          label: function (context) {
+            const datasetLabel = context.dataset.label || "";
+            const category = context.label;
+
+            if (
+              datasetLabel === "No disponibles" &&
+              unavailableProductsByCategory &&
+              unavailableProductsByCategory[category]
+            ) {
+              const productsNoDisponibles =
+                unavailableProductsByCategory[category];
+              if (productsNoDisponibles.length === 0) {
+                return datasetLabel + ": 0";
+              }
+              const productNames = productsNoDisponibles
+                .map((p) => p.product_name)
+                .join(", ");
+              return `${datasetLabel} (${productsNoDisponibles.length}): ${productNames}`;
+            }
+
+            const value =
+              typeof context.parsed === "number"
+                ? context.parsed
+                : context.parsed.y;
+
+            return datasetLabel + ": " + value;
+          },
+        },
+      },
+    },
+  };
+
+  return (
+    <div className="w-full">
+      <h2 className="text-lg font-semibold text-center mb-2">{title}</h2>
+      <CChart
+        type={type}
+        data={{ labels, datasets }}
+        options={extendedOptions}
+      />
     </div>
   );
 };

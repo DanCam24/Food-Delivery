@@ -99,3 +99,4 @@ server/.yarn-integrity
 # dotenv environment variables file
 server/.env
 client/public/tienda3D.glb # Asegúrate de ignorarlo
+node_modules
