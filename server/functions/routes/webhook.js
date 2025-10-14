@@ -2,15 +2,14 @@
 const express = require("express");
 const Stripe = require("stripe");
 const { db } = require("..");
-const stripe = new Stripe(process.env.STRIPE_KEY); // Asegúrate de que esta clave esté definida en tu .env
+const stripe = new Stripe(process.env.STRIPE_KEY);
 const router = express.Router();
 
 let endpointSecret = process.env.WEBHOOK_SECRET;
 
-// Middleware para procesar el webhook
 router.post(
   "/",
-  express.raw({ type: "application/json" }), // Para Stripe, el webhook debe estar en formato raw
+  express.raw({ type: "application/json" }),
   (req, res) => {
     const sig = req.headers["stripe-signature"];
 
@@ -32,7 +31,6 @@ router.post(
       eventType = req.body.type;
     }
 
-    // Aquí puedes manejar los distintos tipos de eventos de Stripe
     if (eventType === "checkout.session.completed") {
       stripe.customers.retrieve(data.customer).then((customer) => {
         createOrder(customer, data, res);

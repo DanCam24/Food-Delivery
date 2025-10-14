@@ -26,11 +26,7 @@ const Cart = () => {
   }, [cart]);
 
   const handleCheckOut = () => {
-    const data = {
-      user: user,
-      cart: cart,
-      total: total,
-    };
+    const data = { user, cart, total };
     axios
       .post(`${baseURL}/api/products/create-checkout-session`, { data })
       .then((res) => {
@@ -44,52 +40,51 @@ const Cart = () => {
   return (
     <motion.div
       {...slideIn}
-      className="fixed z-50 top-0 right-0 w-300 md:w-508 bg-lightOverlay backdrop-blur-md shadow-md h-[92vh]"
+      className="fixed z-50 top-0 right-0 w-300 md:w-508 h-screen bg-lightOverlay backdrop-blur-md shadow-md rounded-l-3xl overflow-hidden flex flex-col"
     >
-      <div className="w-full flex items-center justify-between py-4  px-6">
+      <div className="w-full flex items-center justify-between py-4 px-6 bg-white shadow-md">
         <motion.i
           {...buttonClick}
           className="cursor-pointer"
           onClick={() => dispatch(setCartOff())}
         >
-          <BiChevronsRight className="text-[50px] text-textColor" />
+          <BiChevronsRight className="text-[40px] text-textColor" />
         </motion.i>
         <p className="text-2xl text-headingColor font-bold">Tu Carrito</p>
       </div>
 
-      <div className="flex-1 flex flex-col items-start justify-start rounded-t-3xl bg-zinc-900 h-full py-6  gap-3 relative">
-        {cart && cart?.length > 0 ? (
-          <>
-            <div className="flex flex-col w-full items-start justify-start gap-3 h-[65%] overflow-y-scroll scrollbar-none px-4">
-              {cart &&
-                cart?.length > 0 &&
-                cart?.map((item, i) => (
-                  <CartItemCard key={i} index={i} data={item} />
-                ))}
+      {cart && cart.length > 0 ? (
+        <>
+          <div className="flex-1 overflow-y-auto px-4 py-6 bg-zinc-900 flex flex-col gap-3 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-900">
+            {cart.map((item, i) => (
+              <CartItemCard key={i} index={i} data={item} />
+            ))}
+          </div>
+          <div className="bg-zinc-800 w-full flex flex-col items-center justify-center px-6 py-6 gap-6">
+            <div className="w-full flex items-center justify-between">
+              <p className="text-xl text-zinc-300 font-semibold">Total</p>
+              <p className="text-2xl text-orange-500 font-bold">
+                ${" "}
+                {new Intl.NumberFormat("es-ES", {
+                  style: "decimal",
+                  minimumFractionDigits: 2,
+                }).format(total)}
+              </p>
             </div>
-            <div className="bg-zinc-800 rounded-t-[60px] w-full h-[35%] flex flex-col items-center justify-center px-4 py-6 gap-24">
-              <div className="w-full flex items-center justify-evenly">
-                <p className="text-3xl text-zinc-500 font-semibold">Total</p>
-                <p className="text-3xl text-orange-500 font-semibold flex items-center justify-center gap-1">
-                  $ {total}
-                </p>
-              </div>
-
-              <motion.button
-                {...buttonClick}
-                className="bg-orange-400 w-[70%] px-4 py-3 text-xl text-headingColor font-semibold hover:bg-orange-500 drop-shadow-md rounded-2xl"
-                onClick={handleCheckOut}
-              >
-                Pagar
-              </motion.button>
-            </div>
-          </>
-        ) : (
-          <>
-            <h1 className="text-3xl text-primary font-bold">Carrito Vacío</h1>
-          </>
-        )}
-      </div>
+            <motion.button
+              {...buttonClick}
+              className="bg-orange-500 w-full py-3 rounded-xl text-white font-semibold text-lg hover:bg-orange-600 transition-all duration-200"
+              onClick={handleCheckOut}
+            >
+              Pagar
+            </motion.button>
+          </div>
+        </>
+      ) : (
+        <div className="flex-1 flex items-center justify-center w-full bg-zinc-900">
+          <h1 className="text-3xl text-primary font-bold">Carrito Vacío</h1>
+        </div>
+      )}
     </motion.div>
   );
 };
@@ -101,8 +96,7 @@ export const CartItemCard = ({ index, data }) => {
 
   const decrementCart = (productId) => {
     dispatch(alertSuccess("Cartilla actualizada"));
-
-    increaseItemQuantity(user?.user_id, productId, "decrement").then((data) => {
+    increaseItemQuantity(user?.user_id, productId, "decrement").then(() => {
       getAllCartItems(user?.user_id).then((items) => {
         dispatch(setCartItems(items));
         dispatch(alertNULL());
@@ -112,7 +106,7 @@ export const CartItemCard = ({ index, data }) => {
 
   const incrementCart = (productId) => {
     dispatch(alertSuccess("Cartilla actualizada"));
-    increaseItemQuantity(user?.user_id, productId, "increment").then((data) => {
+    increaseItemQuantity(user?.user_id, productId, "increment").then(() => {
       getAllCartItems(user?.user_id).then((items) => {
         dispatch(setCartItems(items));
         dispatch(alertNULL());
@@ -132,7 +126,7 @@ export const CartItemCard = ({ index, data }) => {
     >
       <img
         src={data?.imageURL}
-        className=" w-24 min-w-[94px] h-24 object-contain"
+        className="w-24 min-w-[94px] h-24 object-contain"
         alt=""
       />
 
@@ -154,7 +148,7 @@ export const CartItemCard = ({ index, data }) => {
           onClick={() => decrementCart(data?.productId)}
           className="w-8 h-8 flex items-center justify-center rounded-md drop-shadow-md bg-zinc-900 cursor-pointer"
         >
-          <p className="text-xl font-semibold text-primary">--</p>
+          <p className="text-xl font-semibold text-primary">–</p>
         </motion.div>
         <p className="text-lg text-primary font-semibold">{data?.quantity}</p>
         <motion.div
