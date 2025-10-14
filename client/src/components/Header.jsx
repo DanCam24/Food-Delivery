@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Avatar, Logo } from "../assets";
-import { isActiveStyles, isNotActiveStyles } from "../utils/styles";
+import { isNotActiveStyles } from "../utils/styles";
 import { motion } from "framer-motion";
 import { buttonClick, slideTop } from "../animations";
 import { MdLogout, MdShoppingCart } from "../assets/icons";

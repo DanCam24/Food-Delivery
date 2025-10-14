@@ -21,7 +21,7 @@ const UsersOrder = () => {
     } else {
       setUserOrders(orders.filter((data) => data.userId === user?.user_id));
     }
-  }, [orders]);
+  }, [orders, dispatch, user?.user_id]);
 
   return (
     <main className="w-screen min-h-screen flex items-center justify-start flex-col bg-primary">
@@ -35,7 +35,9 @@ const UsersOrder = () => {
           </>
         ) : (
           <>
-            <h1 className="text-[72px] text-headingColor font-bold">Sin ordenes</h1>
+            <h1 className="text-[72px] text-headingColor font-bold">
+              Sin ordenes
+            </h1>
           </>
         )}
       </div>

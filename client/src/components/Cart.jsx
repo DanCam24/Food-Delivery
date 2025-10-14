@@ -4,9 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { buttonClick, slideIn, staggerFadeInOut } from "../animations";
 import { baseURL, getAllCartItems, increaseItemQuantity } from "../api";
-import {
-  BiChevronsRight,
-} from "../assets/icons";
+import { BiChevronsRight } from "../assets/icons";
 import { alertNULL, alertSuccess } from "../context/actions/alertActions";
 import { setCartItems } from "../context/actions/cartAction";
 import { setCartOff } from "../context/actions/displayCartAction";
@@ -20,10 +18,10 @@ const Cart = () => {
   useEffect(() => {
     let tot = 0;
     if (cart) {
-      cart.map((data) => {
-        tot = tot + data.product_price * data.quantity;
-        setTotal(tot);
+      cart.forEach((data) => {
+        tot += data.product_price * data.quantity;
       });
+      setTotal(tot);
     }
   }, [cart]);
 
@@ -56,8 +54,7 @@ const Cart = () => {
         >
           <BiChevronsRight className="text-[50px] text-textColor" />
         </motion.i>
-        <p className="text-2xl text-headingColor font-bold">Tu Carrito</p> 
-        
+        <p className="text-2xl text-headingColor font-bold">Tu Carrito</p>
       </div>
 
       <div className="flex-1 flex flex-col items-start justify-start rounded-t-3xl bg-zinc-900 h-full py-6  gap-3 relative">
@@ -98,7 +95,6 @@ const Cart = () => {
 };
 
 export const CartItemCard = ({ index, data }) => {
-  const cart = useSelector((state) => state.cart);
   const user = useSelector((state) => state.user);
   const [itemTotal, setItemTotal] = useState(0);
   const dispatch = useDispatch();
@@ -126,7 +122,7 @@ export const CartItemCard = ({ index, data }) => {
 
   useEffect(() => {
     setItemTotal(data.product_price * data.quantity);
-  }, [itemTotal, cart]);
+  }, [data.product_price, data.quantity]);
 
   return (
     <motion.div
@@ -148,7 +144,7 @@ export const CartItemCard = ({ index, data }) => {
           </span>
         </p>
         <p className="text-sm flex items-center justify-center gap-1 font-semibold text-red-400 ml-auto">
-          $ {new Intl.NumberFormat('es-ES').format(itemTotal)}
+          $ {new Intl.NumberFormat("es-ES").format(itemTotal)}
         </p>
       </div>
 

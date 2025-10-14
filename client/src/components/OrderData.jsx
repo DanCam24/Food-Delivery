@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import React, { useState } from "react";
+import React from "react";
 import { buttonClick, staggerFadeInOut } from "../animations";
 import { getAllOrder, updateOrderSts } from "../api";
 import { setOrders } from "../context/actions/ordersAction";
@@ -7,8 +7,6 @@ import { useDispatch } from "react-redux";
 
 const OrderData = ({ index, data, admin }) => {
   const dispatch = useDispatch();
-  const [cleaning, setCleaning] = useState(false);
-  const [cleanResult, setCleanResult] = useState(null);
 
   const handleClick = (orderId, sts) => {
     updateOrderSts(orderId, sts).then(() => {
@@ -16,32 +14,6 @@ const OrderData = ({ index, data, admin }) => {
         dispatch(setOrders(data));
       });
     });
-  };
-
-  const handleCleanOldCarts = async () => {
-    if (!window.confirm("¿Estás seguro de limpiar los carritos antiguos?")) return;
-
-    setCleaning(true);
-    setCleanResult(null);
-    try {
-      const res = await fetch("/clean-old-carts", {
-        method: "DELETE",
-      });
-      const json = await res.json();
-      if (json.success) {
-        setCleanResult(json.message);
-        // Refrescar órdenes luego de limpiar
-        getAllOrder().then((data) => {
-          dispatch(setOrders(data));
-        });
-      } else {
-        setCleanResult("Error al limpiar carritos antiguos.");
-      }
-    } catch (error) {
-      setCleanResult("Error de conexión.");
-    } finally {
-      setCleaning(false);
-    }
   };
 
   return (
@@ -166,22 +138,6 @@ const OrderData = ({ index, data, admin }) => {
           </div>
         </div>
       </div>
-
-      {/* Botón para limpiar carritos antiguos, solo visible para admin */}
-      {admin && (
-        <div className="mt-4 flex flex-col items-start gap-2">
-          <button
-            disabled={cleaning}
-            onClick={handleCleanOldCarts}
-            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition disabled:opacity-50"
-          >
-            {cleaning ? "Limpiando carritos antiguos..." : "Limpiar carritos antiguos"}
-          </button>
-          {cleanResult && (
-            <p className="text-sm text-green-600 font-semibold">{cleanResult}</p>
-          )}
-        </div>
-      )}
     </motion.div>
   );
 };
