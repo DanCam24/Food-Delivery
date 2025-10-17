@@ -8,7 +8,7 @@ const Alert = ({ type, message }) => {
     return (
       <motion.div
         {...fadeInOut}
-        className="fixed z-50 top-32 right-12 px-4 py-2 rounded-md backdrop-blur-sm bg-emerald-300 shadow-md flex items-center gap-4"
+        className="fixed z-50 right-40 top-5 right-12 px-4 py-2 rounded-md backdrop-blur-sm bg-emerald-300 shadow-md flex items-center gap-25"
       >
         <FaCheck className="text-xl text-emerald-700" />
         <p className="text-xl text-emerald-700">{message}</p>

@@ -93,7 +93,6 @@ export const CartItemCard = ({ index, data }) => {
   const user = useSelector((state) => state.user);
   const [itemTotal, setItemTotal] = useState(0);
   const dispatch = useDispatch();
-
   const decrementCart = (productId) => {
     dispatch(alertSuccess("Cartilla actualizada"));
     increaseItemQuantity(user?.user_id, productId, "decrement").then(() => {
@@ -129,7 +128,6 @@ export const CartItemCard = ({ index, data }) => {
         className="w-24 min-w-[94px] h-24 object-contain"
         alt=""
       />
-
       <div className="flex items-center justify-start gap-1 w-full">
         <p className="text-lg text-primary font-semibold">
           {data?.product_name}
@@ -141,7 +139,6 @@ export const CartItemCard = ({ index, data }) => {
           $ {new Intl.NumberFormat("es-ES").format(itemTotal)}
         </p>
       </div>
-
       <div className="ml-auto flex items-center justify-center gap-3">
         <motion.div
           {...buttonClick}

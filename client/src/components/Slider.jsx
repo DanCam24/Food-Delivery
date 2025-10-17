@@ -1,16 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css"; // Importa los estilos básicos de Swiper
-import "swiper/css/bundle"; // Si usas efectos adicionales (opcional)
-import "../assets/css/swiperStyles.css"; // Si tienes estilos personalizados
+import "swiper/css";
+import "swiper/css/bundle";
+import "../assets/css/swiperStyles.css";
 import { useSelector } from "react-redux";
 import { SliderCard } from "../components";
 
 const Slider = ({ category }) => {
-  const products = useSelector((state) => state.products); // Asumiendo que usas Redux
+  const products = useSelector((state) => state.products);
   const [filteredProducts, setFilteredProducts] = useState([]);
 
-  
   useEffect(() => {
     if (products) {
       setFilteredProducts(

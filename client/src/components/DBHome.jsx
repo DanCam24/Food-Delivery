@@ -125,7 +125,7 @@ const DBHome = () => {
           onChange={(e) => setSelectedYear(Number(e.target.value))}
           className="border px-2 py-1 rounded"
         >
-          {[2023, 2024, 2025].map((year) => (
+          {[2024, 2025].map((year) => (
             <option key={year} value={year}>
               {year}
             </option>

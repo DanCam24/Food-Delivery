@@ -55,7 +55,7 @@ const DBUsers = () => {
                   rowData.emailVerified ? "bg-emerald-500" : "bg-red-500"
                 }`}
               >
-                {rowData.emailVerified ? "Verified" : "Not Verified"}
+                {rowData.emailVerified ? "Verificado" : "No Verificado"}
               </p>
             ),
           },
