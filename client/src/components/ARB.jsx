@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 import * as THREE from "aframe";
 import { MindARThree } from "aframe";
 
@@ -33,7 +33,6 @@ function AR() {
 
     start();
 
-    // cleanup function
     return () => {
       renderer.dispose();
       scene.dispose();
@@ -43,9 +42,16 @@ function AR() {
   }, []);
 
   return (
-    <div ref={containerRef} style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden' }}></div>
+    <div
+      ref={containerRef}
+      style={{
+        width: "100vw",
+        height: "100vh",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    ></div>
   );
 }
 
 export default AR;
-

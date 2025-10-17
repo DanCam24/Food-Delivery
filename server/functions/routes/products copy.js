@@ -6,115 +6,115 @@ const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_KEY);
 db.settings({ ignoreUndefinedProperties: true });
 
+// Crear un producto
 router.post("/create", async (req, res) => {
   try {
+    const { product_name, product_category, product_price, product_quantity, imageURL } = req.body;
+    if (!product_name || !product_category || !product_price || !product_quantity) {
+      return res.status(400).json({ success: false, msg: "Faltan campos obligatorios" });
+    }
+
     const id = Date.now();
     const data = {
       productId: id,
-      product_name: req.body.product_name,
-      product_category: req.body.product_category,
-      product_price: req.body.product_price,
-      product_quantity: req.body.product_quantity,
-      imageURL: req.body.imageURL,
+      product_name,
+      product_category,
+      product_price,
+      product_quantity,
+      imageURL,
     };
+
     const response = await db.collection("products").doc(`${id}`).set(data);
-    return res.status(200).send({ success: true, data: response });
+    return res.status(200).json({ success: true, data: response });
   } catch (err) {
-    return res.send({ success: false, msg: `Error: ${err}` });
+    return res.status(500).json({ success: false, msg: `Error: ${err.message}` });
   }
 });
 
+// Actualizar un producto
 router.put("/update/:productId", async (req, res) => {
-  const productId = req.params.productId;
-  if (
-    !req.body.product_name ||
-    !req.body.product_category ||
-    !req.body.product_price ||
-    !req.body.product_quantity
-  ) {
-    return res
-      .status(400)
-      .send({ success: false, msg: "Faltan datos necesarios" });
+  const { productId } = req.params;
+  const { product_name, product_category, product_price, product_quantity, imageURL } = req.body;
+
+  if (!product_name || !product_category || !product_price || !product_quantity) {
+    return res.status(400).json({ success: false, msg: "Faltan datos necesarios" });
   }
+
   try {
     const updatedData = {
-      product_name: req.body.product_name,
-      product_category: req.body.product_category,
-      product_price: req.body.product_price,
-      product_quantity: req.body.product_quantity,
-      imageURL: req.body.imageURL,
+      product_name,
+      product_category,
+      product_price,
+      product_quantity,
+      imageURL,
     };
     await db.collection("products").doc(productId).update(updatedData);
-    return res
-      .status(200)
-      .send({ success: true, msg: "Producto actualizado con éxito" });
+    return res.status(200).json({ success: true, msg: "Producto actualizado con éxito" });
   } catch (err) {
-    return res
-      .status(400)
-      .send({ success: false, msg: `Error: ${err.message}` });
+    return res.status(500).json({ success: false, msg: `Error: ${err.message}` });
   }
 });
 
+// Obtener todos los productos
 router.get("/all", async (req, res) => {
   try {
-    let query = db.collection("products");
-    let response = [];
+    const query = db.collection("products");
     const querysnap = await query.get();
-    querysnap.docs.forEach((doc) => {
-      response.push({ ...doc.data() });
-    });
-    return res.status(200).send({ success: true, data: response });
+    const response = querysnap.docs.map(doc => doc.data());
+    return res.status(200).json({ success: true, data: response });
   } catch (err) {
-    return res.send({ success: false, msg: `Error: ${err}` });
+    return res.status(500).json({ success: false, msg: `Error: ${err.message}` });
   }
 });
 
+// Eliminar un producto
 router.delete("/delete/:productId", async (req, res) => {
-  const productId = req.params.productId;
+  const { productId } = req.params;
   try {
     await db.collection("products").doc(productId).delete();
-    return res.status(200).send({ success: true });
+    return res.status(200).json({ success: true, msg: "Producto eliminado" });
   } catch (err) {
-    return res.send({ success: false, msg: `Error: ${err}` });
+    return res.status(500).json({ success: false, msg: `Error: ${err.message}` });
   }
 });
 
+// Crear carrito
 router.post("/addToCart/:userId", async (req, res) => {
-  const userId = req.params.userId;
-  const productId = req.body.productId;
+  const { userId } = req.params;
+  const { productId, product_name, product_category, product_price, imageURL } = req.body;
+
   try {
-    const itemRef = db
-      .collection("cartItems")
-      .doc(`${userId}`)
-      .collection("items")
-      .doc(`${productId}`);
+    const itemRef = db.collection("cartItems").doc(userId).collection("items").doc(productId);
     const doc = await itemRef.get();
+
     if (doc.exists) {
       const quantity = doc.data().quantity + 1;
       await itemRef.update({ quantity });
     } else {
       const data = {
-        productId: productId,
-        product_name: req.body.product_name,
-        product_category: req.body.product_category,
-        product_price: req.body.product_price,
-        imageURL: req.body.imageURL,
+        productId,
+        product_name,
+        product_category,
+        product_price,
+        imageURL,
         quantity: 1,
         created: Date.now(),
       };
       await itemRef.set(data);
     }
     const updatedDoc = await itemRef.get();
-    return res.status(200).send({ success: true, data: updatedDoc.data() });
+    return res.status(200).json({ success: true, data: updatedDoc.data() });
   } catch (err) {
-    return res.send({ success: false, msg: `Error :${err}` });
+    return res.status(500).json({ success: false, msg: `Error :${err.message}` });
   }
 });
 
+// update cart to increase and decrease the quantity
 router.post("/updateCart/:user_id", async (req, res) => {
   const userId = req.params.user_id;
   const productId = req.query.productId;
   const type = req.query.type;
+
   try {
     const doc = await db
       .collection("cartItems")
@@ -122,6 +122,7 @@ router.post("/updateCart/:user_id", async (req, res) => {
       .collection("items")
       .doc(`${productId}`)
       .get();
+
     if (doc.data()) {
       if (type === "increment") {
         const quantity = doc.data().quantity + 1;
@@ -160,6 +161,7 @@ router.post("/updateCart/:user_id", async (req, res) => {
   }
 });
 
+// get all the cartitems for that user
 router.get("/getCartItems/:user_id", async (req, res) => {
   const userId = req.params.user_id;
   (async () => {
@@ -169,8 +171,10 @@ router.get("/getCartItems/:user_id", async (req, res) => {
         .doc(`${userId}`)
         .collection("items");
       let response = [];
+
       await query.get().then((querysnap) => {
         let docs = querysnap.docs;
+
         docs.map((doc) => {
           response.push({ ...doc.data() });
         });
@@ -183,16 +187,19 @@ router.get("/getCartItems/:user_id", async (req, res) => {
   })();
 });
 
+// Crear sesión de checkout
 router.post("/create-checkout-session", async (req, res) => {
   try {
     const carritoId = Date.now().toString();
     const { user, cart, total } = req.body.data;
+
     await db.collection("cartPay").doc(carritoId).set({
       user_id: user.user_id,
       items: cart,
       total: total,
       created: Date.now(),
     });
+
     const customer = await stripe.customers.create({
       metadata: {
         user_id: user.user_id,
@@ -251,53 +258,78 @@ router.post("/create-checkout-session", async (req, res) => {
 });
 
 let endpointSecret;
-// endpointSecret = process.env.WEBHOOK_SECRET;
+endpointSecret = process.env.WEBHOOK_SECRET;
 
 router.post(
   "/webhook",
   express.raw({ type: "application/json" }),
-  (req, res) => {
+  async (req, res) => {
     const sig = req.headers["stripe-signature"];
 
     let eventType;
     let data;
 
-    if (endpointSecret) {
-      let event;
-      try {
-        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-      } catch (err) {
-        res.status(400).send(`Webhook Error: ${err.message}`);
-        return;
+    try {
+      if (endpointSecret) {
+        let event = stripe.webhooks.constructEvent(
+          req.body,
+          sig,
+          endpointSecret
+        );
+        data = event.data.object;
+        eventType = event.type;
+      } else {
+        data = req.body.data.object;
+        eventType = req.body.type;
       }
-      data = event.data.object;
-      eventType = event.type;
-    } else {
-      data = req.body.data.object;
-      eventType = req.body.type;
-    }
-    if (eventType === "checkout.session.completed") {
-      stripe.customers.retrieve(data.customer).then((customer) => {
-        createOrder(customer, data, res);
-      });
-    } else {
-      res.send().end();
+
+      // Validar los campos de producto cuando recibimos el evento
+      console.log("holaaaa",data.line_items,data.line_items.data, data.line_items.data.length);
+      
+      if (
+        !data.line_items ||
+        !data.line_items.data ||
+        data.line_items.data.length === 0
+      ) {
+        return res.status(400).send({
+          success: false,
+          msg: "Faltan datos requeridos para los productos",
+        });
+      }
+
+      // Si el evento es de sesión completada
+      if (eventType === "checkout.session.completed") {
+        try {
+          const customer = await stripe.customers.retrieve(data.customer);
+          await createOrder(customer, data);
+          return res.status(200).send({ received: true });
+        } catch (error) {
+          console.error("Error en webhook al crear orden:", error);
+          return res.status(500).send({ success: false });
+        }
+      }
+
+      return res.status(200).send({ received: true });
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
     }
   }
 );
 
-const createOrder = async (customer, intent, res) => {
+const createOrder = async (customer, intent) => {
   try {
     const carritoId = customer.metadata.carrito_id;
+
     const carritoDoc = await db.collection("cartPay").doc(carritoId).get();
     if (!carritoDoc.exists) {
       console.error("Carrito no encontrado:", carritoId);
-      return res
-        .status(400)
-        .send({ success: false, msg: "Carrito no encontrado" });
+      return;
     }
+
     const carritoData = carritoDoc.data();
     const orderId = Date.now();
+
     const orderData = {
       intentId: intent.id,
       orderId: orderId,
@@ -314,13 +346,12 @@ const createOrder = async (customer, intent, res) => {
     };
 
     await db.collection("orders").doc(`${orderId}`).set(orderData);
-    deleteCart(carritoData.user_id, carritoData.items);
+    await deleteCart(carritoData.user_id, carritoData.items);
     await db.collection("cartPay").doc(carritoId).delete();
-    return res.status(200).send({ success: true });
+
+    console.log("Orden creada exitosamente");
   } catch (err) {
-    return res
-      .status(500)
-      .send({ success: false, message: "Error al crear la orden" });
+    console.error("Error al crear la orden:", err);
   }
 };
 
@@ -333,6 +364,9 @@ const deleteCart = async (userId, items) => {
         .collection("items")
         .doc(`${data.productId}`)
         .delete();
+      console.log(
+        `Item ${data.productId} eliminado del carrito de usuario ${userId}`
+      );
     } catch (error) {
       console.error(
         `Error eliminando item ${data.productId} del carrito de usuario ${userId}`,
@@ -342,6 +376,7 @@ const deleteCart = async (userId, items) => {
   }
 };
 
+// orders
 router.get("/orders", async (req, res) => {
   try {
     let query = db.collection("orders");
@@ -356,9 +391,11 @@ router.get("/orders", async (req, res) => {
   }
 });
 
+// update the order status
 router.post("/updateOrder/:order_id", async (req, res) => {
   const order_id = req.params.order_id;
   const sts = req.query.sts;
+
   try {
     const updatedItem = await db
       .collection("orders")

@@ -14,7 +14,6 @@ export const validateUserJWTToken = async (token) => {
   }
 };
 
-// add new product
 export const addNewProduct = async (data) => {
   try {
     const res = await axios.post(`${baseURL}/api/products/create`, { ...data });
@@ -24,7 +23,6 @@ export const addNewProduct = async (data) => {
   }
 };
 
-// update the product
 export const updateProduct = async (product) => {
   try {
     const res = await axios.put(
@@ -37,7 +35,6 @@ export const updateProduct = async (product) => {
   }
 };
 
-// get all the products
 export const getAllProducts = async () => {
   try {
     const res = await axios.get(`${baseURL}/api/products/all`);
@@ -47,7 +44,6 @@ export const getAllProducts = async () => {
   }
 };
 
-// delete a product
 export const deleteAProduct = async (productId) => {
   try {
     const res = await axios.delete(
@@ -68,8 +64,6 @@ export const getAllUsers = async () => {
   }
 };
 
-// add an item to cart
-// add new items to  the cart
 export const addNewItemToCart = async (user_id, data) => {
   try {
     const res = await axios.post(
@@ -93,9 +87,7 @@ export const getAllCartItems = async (user_id) => {
   }
 };
 
-// cart increment
 export const increaseItemQuantity = async (user_id, productId, type) => {
-  console.log(user_id, productId, type);
   try {
     const res = await axios.post(
       `${baseURL}/api/products/updateCart/${user_id}`,
@@ -117,7 +109,6 @@ export const getAllOrder = async () => {
   }
 };
 
-// update the order status
 export const updateOrderSts = async (order_id, sts) => {
   try {
     const res = await axios.post(
