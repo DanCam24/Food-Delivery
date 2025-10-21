@@ -71,7 +71,7 @@ const Ubicate = () => {
           value={inputValue}
           onChange={handleInputChange}
           placeholder="Escribe un producto"
-          className="border-2 border-gray-300 rounded-full px-6 py-2 text-lg shadow-sm focus:outline-none focus:border-green-400 transition-all"
+          className="border-2 border-gray-300 rounded-full px-6 py-2 text-lg shadow-sm focus:outline-none focus:border-red-400 transition-all"
         />
       </div>
       <div

@@ -53,7 +53,7 @@ const SliderCard = ({ data }) => {
         <p className="text-xl text-headingColor font-semibold">
           {data.product_name}
         </p>
-        <p className="text-lg font-semibold text-red-500 flex items-center justify-center gap-1">
+        <p className="text-lg font-semibold text-orange-500 flex items-center justify-center gap-1">
           $ {parseFloat(data.product_price)}
         </p>
 
@@ -61,7 +61,7 @@ const SliderCard = ({ data }) => {
           <motion.div
             {...buttonClick}
             onClick={sendToCart}
-            className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center absolute -top-4 right-12 cursor-pointer"
+            className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center absolute -top-4 right-12 cursor-pointer"
           >
             <IoBasket className="text-2xl text-primary" />
           </motion.div>

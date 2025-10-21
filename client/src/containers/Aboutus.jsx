@@ -33,13 +33,15 @@ const AboutUs = () => {
       <div className="w-full flex md:flex-row flex-col-reverse items-start justify-between mt-40 px-6 md:px-24 2xl:px-96 gap-12 pb-24">
         <div className="flex-1 md:max-w-[70%]">
           <motion.div className="flex flex-col items-start justify-start gap-6">
-            <div className="px-4 py-1 flex items-center justify-center gap-2 bg-green-100 rounded-full">
-              <p className="text-lg font-semibold text-green-500">Desde 2010</p>
+            <div className="px-4 py-1 flex items-center justify-center gap-2 bg-orange-100 rounded-full">
+              <p className="text-lg font-semibold text-orange-500">
+                Desde 2010
+              </p>
             </div>
 
             <h1 className="text-[40px] text-headingColor md:text-[72px] font-sans font-extrabold tracking-wider">
               Calidad y Sabor en{" "}
-              <span className="text-green-600">Frutas y Verduras</span>
+              <span className="text-orange-600">Frutas y Verduras</span>
             </h1>
 
             <p className="text-textColor text-lg">
@@ -53,7 +55,7 @@ const AboutUs = () => {
 
           <section className="mt-8">
             <h2 className="text-[40px] text-headingColor md:text-[52px] font-sans font-extrabold tracking-wider">
-              <span className="text-green-600">Nuestra </span>
+              <span className="text-orange-600">Nuestra </span>
               Misión
             </h2>
             <p className="text-lg text-textColor">{aboutInfo.mission}</p>
@@ -61,7 +63,7 @@ const AboutUs = () => {
 
           <section className="mt-8">
             <h2 className="text-[40px] text-headingColor md:text-[52px] font-sans font-extrabold tracking-wider">
-              <span className="text-green-600">Nuestros </span>
+              <span className="text-orange-600">Nuestros </span>
               Valores
             </h2>
             <ul className="list-disc ml-5 text-lg text-textColor">
@@ -73,7 +75,7 @@ const AboutUs = () => {
 
           <section className="mt-8">
             <h2 className="text-[40px] text-headingColor md:text-[52px] font-sans font-extrabold tracking-wider">
-              <span className="text-green-600">Nuestros </span>
+              <span className="text-orange-600">Nuestros </span>
               Productos
             </h2>
             <ul className="list-disc ml-5 text-lg text-textColor">
@@ -84,13 +86,13 @@ const AboutUs = () => {
           </section>
 
           <motion.a
-            href={aboutInfo.mapLink} 
-            target="_blank" 
-            rel="noopener noreferrer" 
+            href={aboutInfo.mapLink}
+            target="_blank"
+            rel="noopener noreferrer"
           >
             <motion.button
               {...buttonClick}
-              className="bg-gradient-to-bl from-green-400 to-green-600 px-4 py-2 rounded-xl text-black text-base font-semibold mt-8"
+              className="bg-gradient-to-bl from-orange-400 to-orange-600 px-4 py-2 rounded-xl text-black text-base font-semibold mt-8"
             >
               Visítanos
             </motion.button>

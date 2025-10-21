@@ -23,7 +23,7 @@ export const randomData = [
       "https://firebasestorage.googleapis.com/v0/b/fullstack-food-app-react-50dea.appspot.com/o/Images%2F1698776552042_Tomate_Chonto.png?alt=media&token=49919cd9-2004-4c52-ab82-88b00e48fac1",
     product_name: "Tomate Chonto",
     product_category: "Prom 3 libras",
-    product_price: "2000",
+    product_price: "4900",
   },
   {
     id: 2,
@@ -31,7 +31,7 @@ export const randomData = [
       "https://firebasestorage.googleapis.com/v0/b/fullstack-food-app-react-50dea.appspot.com/o/Images%2F1698777536206_Alas%20de%20Pollo.png?alt=media&token=d9739c2d-3033-4f9f-bc53-a4bd0015d521",
     product_name: "Alas de Pollo",
     product_category: "Prom 5 libras",
-    product_price: "18000",
+    product_price: "32800",
   },
   {
     id: 3,
@@ -39,7 +39,7 @@ export const randomData = [
       "https://firebasestorage.googleapis.com/v0/b/fullstack-food-app-react-50dea.appspot.com/o/Images%2F1698777392373_Carne%20de%20Cerdo.png?alt=media&token=371d37b1-c3fb-42a7-8800-0eeebbeac903",
     product_name: "Carne de Cerdo",
     product_category: "Prom 3 Kilos",
-    product_price: "15000",
+    product_price: "65900",
   },
   {
     id: 4,
@@ -54,8 +54,8 @@ export const randomData = [
     imageURL:
       "https://firebasestorage.googleapis.com/v0/b/fullstack-food-app-react-50dea.appspot.com/o/Images%2F1698777165126_Carne_Fina.png?alt=media&token=a70943fd-e01d-4e63-a734-4bcd47031980",
     product_name: "Carne Fina",
-    product_category: "Prom 4 Libras",
-    product_price: "50000",
+    product_category: "Prom 4 Kilos",
+    product_price: "130000",
   },
   {
     id: 6,
@@ -63,6 +63,6 @@ export const randomData = [
       "https://firebasestorage.googleapis.com/v0/b/fullstack-food-app-react-50dea.appspot.com/o/Images%2F1698779256970_Pi%C3%B1a.png?alt=media&token=d3c78da7-bc66-48af-b25b-1ffcc8566bdb",
     product_name: "Piña Común",
     product_category: "Prom 6 Unidades",
-    product_price: "20000",
+    product_price: "11500",
   },
 ];

@@ -43,14 +43,12 @@ const Home = () => {
           </motion.button>
         </NavLink>
       </div>
-
-      <div className="py-2 flex-1 flex items-center justify-center relative">
+      <div className="py-2 flex-1 flex flex-col items-center justify-center relative">
         <img
-          className="absolute top-0 right-0 w-full h-auto hidden md:block md:w-auto md:h-auto"
+          className="absolute top-0 w-full hidden md:block h-[600px] md:w-auto md:h-[670px]"
           src={HeroBg}
           alt="Fondo Hero"
         />
-
         <div className="grid grid-cols-2 gap-4">
           {randomData &&
             randomData.map((data, i) => (
@@ -79,6 +77,12 @@ const Home = () => {
               </motion.div>
             ))}
         </div>
+        <motion.p
+          {...staggerFadeInOut(randomData?.length || 0)}
+          className="mt-6 text-sm md:text-base text-gray-600 font-medium text-center italic"
+        >
+          * La promoción solo aplica en sede física.
+        </motion.p>
       </div>
     </motion.div>
   );
