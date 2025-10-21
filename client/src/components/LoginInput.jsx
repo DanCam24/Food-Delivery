@@ -8,7 +8,6 @@ const LoginInput = ({
   inputState,
   inputStateFunc,
   type,
-  isSignUp,
 }) => {
   const [isFocus, setIsFocus] = useState(false);
   return (

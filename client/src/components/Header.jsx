@@ -38,7 +38,7 @@ const commonLinks = [
   {
     to: "/aboutus",
     label: "Acerca De Nosotros",
-    activeClassName: "text-green-500",
+    activeClassName: "text-red-500",
   },
 ];
 
